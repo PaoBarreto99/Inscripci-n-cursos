@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Inscripción a Cursos</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f2f2f2; }
+    form { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+    h2 { text-align: center; }
+    label, select, input { display: block; margin-bottom: 10px; width: 100%; }
+    button { padding: 10px; width: 100%; background: #4CAF50; color: white; border: none; border-radius: 5px; }
+    .msg { margin-top: 10px; font-weight: bold; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <form id="formulario">
+    <h2>Formulario de Inscripción</h2>
+
+    <label>Nombre y Apellido:</label>
+    <input type="text" id="nombre" required>
+
+    <label>Curso:</label>
+    <select id="curso" required></select>
+
+    <button type="submit">Inscribirme</button>
+    <div class="msg" id="mensaje"></div>
+  </form>
+
+  <script>
+    // Lista de cursos con cupos (almacenado en el navegador)
+    const cursos = {
+      "Productividad y utilización de los recursos - 21/7 de 13 a 17": 25,
+      "Espacios confinados - 10 y 11/7 13 a 17hs": 25,
+      "Trabajo en altura - 10 y 11/7 9 a 13hs": 25,
+      "Gestión de seguridad en mantenimiento – 1 y 2/7 de 13 a 17hs": 25,
+      "Gestión de Bloqueos - 18/7 9 a 13hs": 25,
+      "Herramientas de mejora continua - 14, 15 y 17 de Julio de 9 a 13hs": 25
+    };
+
+    // Guardar cupos en LocalStorage si no están guardados
+    if (!localStorage.getItem('cupos')) {
+      localStorage.setItem('cupos', JSON.stringify(cursos));
+    }
+
+    // Cargar los cursos en el select
+    const cuposActuales = JSON.parse(localStorage.getItem('cupos'));
+    const cursoSelect = document.getElementById('curso');
+    for (let nombre in cuposActuales) {
+      const opcion = document.createElement('option');
+      opcion.value = nombre;
+      opcion.textContent = `${nombre} (${cuposActuales[nombre]} cupos disponibles)`;
+      cursoSelect.appendChild(opcion);
+    }
+
+    // Función al enviar el formulario
+    document.getElementById('formulario').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nombre = document.getElementById('nombre').value.trim();
+      const curso = document.getElementById('curso').value;
+      let cupos = JSON.parse(localStorage.getItem('cupos'));
+      const mensaje = document.getElementById('mensaje');
+
+      if (cupos[curso] > 0) {
+        cupos[curso]--;
+        localStorage.setItem('cupos', JSON.stringify(cupos));
+        mensaje.style.color = 'green';
+        mensaje.textContent = `¡Inscripción exitosa, ${nombre}! Te anotaste en: ${curso}`;
+
+        // Actualizar select
+        cursoSelect.innerHTML = '';
+        for (let nombre in cupos) {
+          const opcion = document.createElement('option');
+          opcion.value = nombre;
+          opcion.textContent = `${nombre} (${cupos[nombre]} cupos disponibles)`;
+          if (cupos[nombre] > 0) cursoSelect.appendChild(opcion);
+        }
+
+      } else {
+        mensaje.style.color = 'red';
+        mensaje.textContent = 'Este curso ya no tiene cupos disponibles.';
+      }
+
+      document.getElementById('formulario').reset();
+    });
+  </script>
+
+</body>
+</html>
